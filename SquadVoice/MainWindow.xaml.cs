@@ -59,6 +59,14 @@ namespace SquadVoice
 
 			// Запускаем захват и отправку аудио
 			Task.Run(() => StartAudioCapture());
+
+			Task.Run(() => ReceiveMessage());
+		}
+
+		private void testButton1_Click(object sender, RoutedEventArgs e)
+		{
+			NetworkTools networkTools = new NetworkTools(_stream);
+			networkTools.sendData(activeFieldTextBox.Text);
 		}
 
 		//Close
@@ -131,6 +139,27 @@ namespace SquadVoice
 			waveOut.Dispose();
 			_stream.Close();
 			_client.Close();
+		}
+
+		private void ReceiveMessage()
+		{
+			try
+			{
+				while (true)
+				{
+					NetworkTools networkTools = new NetworkTools(_stream);
+					allChatTextBox.Text = allChatTextBox.Text + " " + networkTools.getData();
+				}
+			}
+			catch (Exception ex)
+			{
+				// Логирование ошибки или обработка
+				MessageBox.Show("Error receiving message: " + ex.Message, "айя!");
+			}
+			finally
+			{
+
+			}
 		}
 	}
 }
