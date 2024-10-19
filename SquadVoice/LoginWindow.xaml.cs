@@ -34,13 +34,27 @@ namespace SquadVoice
 		string filePathCredentials = "credentials.txt";
 		private void loginWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-			string[] linesConfig = File.ReadAllLines(filePathConfig);
-			SERVER_IP = linesConfig[0].Split('=')[1];  // Получаем значение ip
-			SERVER_PORT = Convert.ToInt32(linesConfig[1].Split('=')[1]);  // Получаем значение port
+			if(File.Exists(filePathConfig))
+			{
+				string[] linesConfig = File.ReadAllLines(filePathConfig);
+				SERVER_IP = linesConfig[0].Split('=')[1];  // Получаем значение ip
+				SERVER_PORT = Convert.ToInt32(linesConfig[1].Split('=')[1]);  // Получаем значение port
+			}
+			else
+			{
+				File.WriteAllText(filePathConfig, $"ip={SERVER_IP}\nport={SERVER_PORT}");
+			}
 
-			string[] linesCredentials = File.ReadAllLines(filePathCredentials);
-			loginTextBox.Text = linesCredentials[0].Split('=')[1];  // Получаем значение логина
-			passTextBox.Text = linesCredentials[1].Split('=')[1];  // Получаем значение пароля
+			if (File.Exists(filePathCredentials))
+			{
+				string[] linesCredentials = File.ReadAllLines(filePathCredentials);
+				loginTextBox.Text = linesCredentials[0].Split('=')[1];  // Получаем значение логина
+				passTextBox.Text = linesCredentials[1].Split('=')[1];  // Получаем значение пароля
+			}
+			else
+			{
+				File.WriteAllText(filePathCredentials, $"Login={123}\nPassword={123}");
+			}
 		}
 
 		//login
