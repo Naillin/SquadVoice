@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SquadVoice"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="mainWindow_Loaded">
+        Title="MainWindow" Height="450" Width="800" Loaded="mainWindow_Loaded" Closing="mainWindow_Closing">
     <Grid x:Name="mainGrid">
         <TreeView x:Name="mainTreeView" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Width="290" Height="361"/>
         <TextBox x:Name="allChatTextBox" HorizontalAlignment="Right" Margin="0,10,10,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="482" Height="361"/>

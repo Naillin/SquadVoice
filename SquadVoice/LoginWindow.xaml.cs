@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace SquadVoice
 {
@@ -59,7 +60,7 @@ namespace SquadVoice
 			//
 		}
 
-		private static void SendLoginPassword(string login, string password)
+		private void SendLoginPassword(string login, string password)
 		{
 			TcpClient client = new TcpClient(SERVER_IP, SERVER_PORT);
 			NetworkStream stream = client.GetStream();
@@ -75,8 +76,9 @@ namespace SquadVoice
 
 			if (responseData[0] == 1)
 			{
-				MainWindow mainWindow = new MainWindow();
+				MainWindow mainWindow = new MainWindow(client, stream);
 				mainWindow.Show();
+				this.Hide();
 			}
 			else
 			{
