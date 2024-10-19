@@ -98,9 +98,6 @@ namespace SquadVoice
 			{
 				MessageBox.Show("неправильный пароль братан!", "айя!");
 			}
-
-			stream.Close();
-			client.Close();
 		}
 	}
 }

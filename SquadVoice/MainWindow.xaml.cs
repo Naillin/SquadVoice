@@ -48,6 +48,9 @@ namespace SquadVoice
 			waveOut.Init(waveProvider);
 			waveOut.Play();
 
+			NetworkTools networkTools = new NetworkTools();
+			networkTools.sendData(_stream, "General");
+
 			// Запускаем поток для получения аудио
 			Task.Run(() => ReceiveAudio());
 
@@ -73,8 +76,24 @@ namespace SquadVoice
 
 		private void OnDataAvailable(object sender, WaveInEventArgs e)
 		{
-			// Отправляем аудио данные на сервер
-			_stream.Write(e.Buffer, 0, e.BytesRecorded);
+			try
+			{
+				if (_stream != null && _stream.CanWrite)
+				{
+					// Отправляем аудио данные на сервер
+					_stream.Write(e.Buffer, 0, e.BytesRecorded);
+				}
+			}
+			catch (ObjectDisposedException)
+			{
+				// Обработка ситуации, когда поток закрыт
+				MessageBox.Show("NetworkStream is closed. Cannot send audio data.", "айя!");
+			}
+			catch (Exception ex)
+			{
+				// Обработка других ошибок
+				MessageBox.Show("Error receiving audio: " + ex.Message, "айя!");
+			}
 		}
 
 		private void ReceiveAudio()
@@ -87,7 +106,7 @@ namespace SquadVoice
 					int bytesRead = _stream.Read(buffer, 0, buffer.Length);
 					if (bytesRead == 0) break; // Если нет данных, выходим из цикла
 
-					// Добавляем полученные данные в буфер воспроизведения
+					//Добавляем полученные данные в буфер воспроизведения
 					waveProvider.AddSamples(buffer, 0, bytesRead);
 				}
 			}
