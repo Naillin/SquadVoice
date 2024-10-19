@@ -79,10 +79,13 @@ namespace SquadVoice
 			TcpClient client = new TcpClient(SERVER_IP, SERVER_PORT);
 			NetworkStream stream = client.GetStream();
 
+			NetworkTools networkTools = new NetworkTools(stream);
+
 			// Отправляем логин и пароль
 			string message = $"{login}:{password}";
-			byte[] data = Encoding.UTF8.GetBytes(message);
-			stream.Write(data, 0, data.Length);
+			networkTools.sendData(message);
+			//byte[] data = Encoding.UTF8.GetBytes(message);
+			//stream.Write(data, 0, data.Length);
 
 			// Читаем ответ от сервера (1 или 0)
 			byte[] responseData = new byte[1];

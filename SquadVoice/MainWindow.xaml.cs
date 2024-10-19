@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -39,6 +40,7 @@ namespace SquadVoice
 
         }
 
+		private BufferedWaveProvider waveProvider; // Буфер для воспроизведения
 		private WaveOutEvent waveOut; // Для воспроизведения аудио
 		private void testButton_Click(object sender, RoutedEventArgs e)
 		{
@@ -48,8 +50,9 @@ namespace SquadVoice
 			waveOut.Init(waveProvider);
 			waveOut.Play();
 
-			NetworkTools networkTools = new NetworkTools();
-			networkTools.sendData(_stream, "General");
+			NetworkTools networkTools = new NetworkTools(_stream);
+			networkTools.sendData("General");
+			Thread.Sleep(100);  // Небольшая задержка, чтобы данные точно дошли
 
 			// Запускаем поток для получения аудио
 			Task.Run(() => ReceiveAudio());
@@ -65,7 +68,6 @@ namespace SquadVoice
 		}
 
 		private WaveInEvent waveIn; // Для захвата аудио
-		private BufferedWaveProvider waveProvider; // Буфер для воспроизведения
 		private void StartAudioCapture()
 		{
 			waveIn = new WaveInEvent();
