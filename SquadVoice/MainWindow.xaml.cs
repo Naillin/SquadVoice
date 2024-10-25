@@ -24,24 +24,29 @@ namespace SquadVoice
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private TcpClient _client;
-		private NetworkStream _stream;
-
-		public MainWindow(TcpClient client, NetworkStream stream)
+		private TcpClient techClient;
+		public MainWindow(TcpClient client)
 		{
 			InitializeComponent();
 
-			_client = client;
-			_stream = stream;
+			techClient = client;
 		}
 
+		TcpClient chatClient;
+		TcpClient voiceClient;
+		TcpClient videoClient;
+		TcpClient deskClient;
 		private void mainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
-
-        }
-
+			chatClient = new NetworkTools().TryConnection(LoginWindow.SERVER_IP, LoginWindow.PORT_CHAT); Thread.Sleep(100);
+			voiceClient = new NetworkTools().TryConnection(LoginWindow.SERVER_IP, LoginWindow.PORT_VOICE); Thread.Sleep(100);
+			videoClient = new NetworkTools().TryConnection(LoginWindow.SERVER_IP, LoginWindow.PORT_VIDEO); Thread.Sleep(100);
+			deskClient = new NetworkTools().TryConnection(LoginWindow.SERVER_IP, LoginWindow.PORT_DESK); Thread.Sleep(100);
+		}
+		
 		private BufferedWaveProvider waveProvider; // Буфер для воспроизведения
 		private WaveOutEvent waveOut; // Для воспроизведения аудио
+		CancellationTokenSource cancellationTokenSource;
 		private void testButton_Click(object sender, RoutedEventArgs e)
 		{
 			// Инициализация воспроизведения
@@ -50,48 +55,60 @@ namespace SquadVoice
 			waveOut.Init(waveProvider);
 			waveOut.Play();
 
-			NetworkTools networkTools = new NetworkTools(_stream);
-			networkTools.sendData("General");
+			NetworkTools networkTools = new NetworkTools(techClient);
+			networkTools.SendString("General");
 			Thread.Sleep(100);  // Небольшая задержка, чтобы данные точно дошли
 
+			cancellationTokenSource = new CancellationTokenSource();
+			CancellationToken token = cancellationTokenSource.Token;
 			// Запускаем поток для получения аудио
-			Task.Run(() => ReceiveAudio());
+			Task.Run(async () => await ReceiveAudioAsync(token), token);
 
 			// Запускаем захват и отправку аудио
-			Task.Run(() => StartAudioCapture());
+			Task.Run(() => StartAudioCapture(token), token);
 
-			Task.Run(() => ReceiveMessage());
+			//Получение сообщений
+			Task.Run(() => ReceiveMessage(token), token);
 		}
 
+		//сообщение
 		private void testButton1_Click(object sender, RoutedEventArgs e)
 		{
-			NetworkTools networkTools = new NetworkTools(_stream);
-			networkTools.sendData(activeFieldTextBox.Text);
+			NetworkTools networkTools = new NetworkTools(chatClient);
+			networkTools.SendString(activeFieldTextBox.Text); //нельзя отправть пустое сообщение!
 		}
 
 		//Close
 		private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			StopAudio();
+			//new NetworkTools().TryDisconnect(techClient);
+			StopAll();
 		}
 
 		private WaveInEvent waveIn; // Для захвата аудио
-		private void StartAudioCapture()
+		private void StartAudioCapture(CancellationToken token)
 		{
 			waveIn = new WaveInEvent();
 			waveIn.WaveFormat = new WaveFormat(44100, 1); // 44.1kHz, моно
 			waveIn.DataAvailable += OnDataAvailable;
 			waveIn.StartRecording();
+
+			token.Register(() => StopAudioCapture()); // Остановка при срабатывании токена
 		}
 
 		private void OnDataAvailable(object sender, WaveInEventArgs e)
 		{
+
+			if (cancellationTokenSource.Token.IsCancellationRequested)
+				return; // Прекратить отправку данных, если есть запрос на отмену
+
 			try
 			{
-				if (_stream != null && _stream.CanWrite)
+				NetworkStream voiceStream = voiceClient.GetStream();
+				if (voiceStream != null && voiceStream.CanWrite)
 				{
 					// Отправляем аудио данные на сервер
-					_stream.Write(e.Buffer, 0, e.BytesRecorded);
+					voiceStream.Write(e.Buffer, 0, e.BytesRecorded);
 				}
 			}
 			catch (ObjectDisposedException)
@@ -102,53 +119,112 @@ namespace SquadVoice
 			catch (Exception ex)
 			{
 				// Обработка других ошибок
-				MessageBox.Show("Error receiving audio: " + ex.Message, "айя!");
+				MessageBox.Show("Error receiving audio11: " + ex.Message, "айя!");
 			}
 		}
 
-		private void ReceiveAudio()
+		private async Task ReceiveAudioAsync(CancellationToken token)
 		{
 			byte[] buffer = new byte[4096]; // Размер буфера
 			try
 			{
-				while (true)
+				NetworkStream voiceStream = voiceClient.GetStream();
+				while (!token.IsCancellationRequested)
 				{
-					int bytesRead = _stream.Read(buffer, 0, buffer.Length);
+					int bytesRead = await voiceStream.ReadAsync(buffer, 0, buffer.Length, token);
 					if (bytesRead == 0) break; // Если нет данных, выходим из цикла
 
 					//Добавляем полученные данные в буфер воспроизведения
 					waveProvider.AddSamples(buffer, 0, bytesRead);
 				}
 			}
+			catch (OperationCanceledException)
+			{
+				// Операция была отменена, выходим из метода
+				Console.WriteLine("ReceiveAudio operation was canceled.");
+			}
 			catch (Exception ex)
 			{
 				// Логирование ошибки или обработка
-				MessageBox.Show("Error receiving audio: " + ex.Message, "айя!");
+				MessageBox.Show("Error receiving audio22: " + ex.Message, "айя!");
 			}
 			finally
 			{
-				StopAudio(); // Вызываем StopAudio() здесь, когда мы действительно выходим из цикла
+				StopNet(); // Вызываем StopAudio() здесь, когда мы действительно выходим из цикла
 			}
 		}
 
-		private void StopAudio()
+		private void StopAudioCapture()
+		{
+			if (waveIn != null)
+			{
+				waveIn.StopRecording(); // Остановить захват аудио
+				waveIn.Dispose(); // Освободить ресурсы
+				waveIn = null;
+			}
+
+			if (voiceClient != null && voiceClient.Connected)
+			{
+				voiceClient.GetStream().Close(); // Закрыть сетевой поток
+				voiceClient.Close(); // Закрыть соединение
+			}
+		}
+
+		// Метод для остановки задач
+		public void StopTasks()
+		{
+			cancellationTokenSource.Cancel();
+		}
+
+		private void StopNet()
 		{
 			waveIn?.StopRecording();
 			waveIn?.Dispose();
 			waveOut.Stop();
 			waveOut.Dispose();
-			_stream.Close();
-			_client.Close();
+
+			//// Уничтожаем сетевые потоки
+			//techClient?.GetStream()?.Close();
+			//chatClient?.GetStream()?.Close();
+			//voiceClient?.GetStream()?.Close();
+			//videoClient?.GetStream()?.Close();
+			//deskClient?.GetStream()?.Close();
+
+			//// Освобождаем ресрурсы соединения с клиентом
+			//techClient?.Dispose();
+			//chatClient?.Dispose();
+			//voiceClient?.Dispose();
+			//videoClient?.Dispose();
+			//deskClient?.Dispose();
+
+			//// Закрываем соединение с клиентом
+			//techClient?.Close();
+			//chatClient?.Close();
+			//voiceClient?.Close();
+			//videoClient?.Close();
+			//deskClient?.Close();
 		}
 
-		private void ReceiveMessage()
+		public void StopAll()
+		{
+			StopTasks();
+			StopNet();
+
+			Application.Current.Shutdown();
+		}
+
+		private void ReceiveMessage(CancellationToken token)
 		{
 			try
 			{
-				while (true)
+				NetworkTools networkTools = new NetworkTools(chatClient);
+				while (!token.IsCancellationRequested)
 				{
-					NetworkTools networkTools = new NetworkTools(_stream);
-					allChatTextBox.Text = allChatTextBox.Text + " " + networkTools.getData();
+					string message = networkTools.TakeBytes().GetString();
+					allChatTextBox.Dispatcher.Invoke(() =>
+					{
+						allChatTextBox.Text = allChatTextBox.Text + " " + message;
+					});
 				}
 			}
 			catch (Exception ex)
@@ -158,7 +234,7 @@ namespace SquadVoice
 			}
 			finally
 			{
-
+				StopNet();
 			}
 		}
 	}

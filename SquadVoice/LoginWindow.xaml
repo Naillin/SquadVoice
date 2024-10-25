@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SquadVoice"
         mc:Ignorable="d"
-        Title="loginWindow" Height="600" Width="400" Loaded="loginWindow_Loaded">
+        Title="loginWindow" Height="600" Width="400" Loaded="loginWindow_Loaded" Closing="loginWindow_Closing" WindowStartupLocation="CenterScreen">
     <Grid x:Name="loginGrid">
         <TextBox x:Name="loginTextBox" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Login" VerticalAlignment="Center" Width="330" Height="40" FontFamily="Bahnschrift Light Condensed" FontSize="36" Grid.Row="1"/>
         <TextBox x:Name="passTextBox" HorizontalAlignment="Center" TextWrapping="Wrap" Text="Password" VerticalAlignment="Top" Width="330" Height="40" FontFamily="Bahnschrift Light Condensed" FontSize="36" Margin="0,317,0,0"/>
