@@ -22,6 +22,9 @@ namespace SquadVoice
 		private byte[] bufferOut;
 		public NetworkTools TakeBytes()
 		{
+			if (_stream == null)
+				return this;
+
 			List<byte> buffer = new List<byte>();
 			byte[] tempBuffer = new byte[256];
 			int bytesRead;
@@ -30,8 +33,7 @@ namespace SquadVoice
 			{
 				bytesRead = _stream.Read(tempBuffer, 0, tempBuffer.Length);
 				buffer.AddRange(tempBuffer.Take(bytesRead));
-			}
-			while (_stream.DataAvailable);
+			} while (_stream.DataAvailable);
 
 			bufferOut = buffer.ToArray();
 			return this;
@@ -40,6 +42,9 @@ namespace SquadVoice
 		// Асинхронный метод для принятия пакетов
 		public async Task<NetworkTools> TakeBytesAsync()
 		{
+			if (_stream == null)
+				return this;
+
 			List<byte> buffer = new List<byte>();
 			byte[] tempBuffer = new byte[256];
 			int bytesRead;
@@ -48,8 +53,7 @@ namespace SquadVoice
 			{
 				bytesRead = await _stream.ReadAsync(tempBuffer, 0, tempBuffer.Length);
 				buffer.AddRange(tempBuffer.Take(bytesRead));
-			}
-			while (_stream.DataAvailable);
+			} while (_stream.DataAvailable);
 
 			bufferOut = buffer.ToArray();
 			return this;
@@ -171,24 +175,21 @@ namespace SquadVoice
 		public TcpClient GetClient(IPAddress ip, int port, bool apply = false)
 		{
 			TcpClient result = null;
-			//TcpListener listener = new TcpListener(IPAddress.Any, port);
-			//listener.Start();  // Запускаем слушатель один раз
 
 			while (true)
 			{
-				//result = listener.AcceptTcpClient();  // Ожидаем подключения клиента
 				result = new NetworkTools().AcceptConnection(port);
 				if (GetIP(result).Equals(ip)) { break; } // Проверяем IP-адрес
-				else { result.Close(); }
+				else { result.Close(); } 
 
 				Thread.Sleep(100);
 			}
 
-			//listener.Stop();  // Останавливаем слушатель после получения правильного клиента
 			if (apply) ApplyClient(result);
 			return result;
 		}
 
+		///////////////////////////////////////////////////////////////////////////////
 		private string disconnectString = "Disconnect";
 		public void TryDisconnect(TcpClient client)
 		{
@@ -197,7 +198,7 @@ namespace SquadVoice
 
 		public void AcceptDisconnect(CustomClient customClient)
 		{
-			if (TakeBytes().GetString().Equals(disconnectString))
+			if(TakeBytes().GetString().Equals(disconnectString))
 			{
 				// Уничтожаем сетевые потоки
 				customClient.techClient?.GetStream()?.Close();

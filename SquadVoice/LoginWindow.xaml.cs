@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Net;
+using System.Threading;
 
 namespace SquadVoice
 {
@@ -37,9 +38,9 @@ namespace SquadVoice
 		static public int PORT_DESK = 5959;
 		private string filePathConfig = "configClient.txt";
 		private string filePathCredentials = "credentials.txt";
-		private void loginWindow_Loaded(object sender, RoutedEventArgs e)
+		private void windowLogin_Loaded(object sender, RoutedEventArgs e)
 		{
-			if(File.Exists(filePathConfig))
+			if (File.Exists(filePathConfig))
 			{
 				string[] linesConfig = File.ReadAllLines(filePathConfig);
 				SERVER_IP = IPAddress.Parse(linesConfig[0].Split('=')[1]);
@@ -63,13 +64,16 @@ namespace SquadVoice
 			if (File.Exists(filePathCredentials))
 			{
 				string[] linesCredentials = File.ReadAllLines(filePathCredentials);
-				loginTextBox.Text = linesCredentials[0].Split('=')[1];  // Получаем значение логина
-				passTextBox.Text = linesCredentials[1].Split('=')[1];  // Получаем значение пароля
+				textBoxLogin.Text = linesCredentials[0].Split('=')[1];  // Получаем значение логина
+				textBoxPassword.Text = linesCredentials[1].Split('=')[1];  // Получаем значение пароля
 			}
 			else
 			{
 				File.WriteAllText(filePathCredentials, $"Login={123}\nPassword={123}");
 			}
+
+			// Анимация
+			Task.Run(() => Animation());
 		}
 
 		private void loginWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -78,10 +82,10 @@ namespace SquadVoice
 		}
 
 		//login
-		private void loginButton_Click(object sender, RoutedEventArgs e)
+		private void buttonLogin_Click(object sender, RoutedEventArgs e)
 		{
-			string login = loginTextBox.Text;
-			string password = passTextBox.Text;
+			string login = textBoxLogin.Text;
+			string password = textBoxPassword.Text;
 
 			// Перезапись файла с новыми данными
 			File.WriteAllText(filePathCredentials, $"Login={login}\nPassword={password}");
@@ -89,9 +93,10 @@ namespace SquadVoice
 		}
 
 		//options
-		private void optionsButton_Click(object sender, RoutedEventArgs e)
+		private void buttonOptions_Click(object sender, RoutedEventArgs e)
 		{
-			//
+			OptionsWindow optionsWindow = new OptionsWindow();
+			optionsWindow.ShowDialog();
 		}
 
 		private async void SendLoginPassword(string login, string password)
@@ -114,6 +119,18 @@ namespace SquadVoice
 			else
 			{
 				MessageBox.Show("неправильный пароль братан!", "айя!");
+			}
+		}
+
+		private void Animation()
+		{
+			while (true)
+			{
+				rotateTransformLoginButton.Dispatcher.Invoke(() =>
+				{
+					rotateTransformLoginButton.Angle = rotateTransformLoginButton.Angle + 10;
+				});
+				Thread.Sleep(100);
 			}
 		}
 	}

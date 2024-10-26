@@ -1,17 +1,22 @@
-﻿<Window x:Name="mainWindow" x:Class="SquadVoice.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SquadVoice"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="1000" Loaded="mainWindow_Loaded" Closing="mainWindow_Closing" MinWidth="1000" MinHeight="498" WindowStartupLocation="CenterScreen">
-    <Grid x:Name="mainGrid">
-        <TreeView x:Name="mainTreeView" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" Width="290" Height="361"/>
-        <TextBox x:Name="allChatTextBox" HorizontalAlignment="Right" Margin="0,10,10,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="482" Height="361"/>
-        <TextBox x:Name="activeFieldTextBox" HorizontalAlignment="Right" Margin="0,0,10,10" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Bottom" Width="482" Height="48"/>
-        <Button x:Name="testButton" Content="Button" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="10,0,0,10" Height="48" Width="290" Click="testButton_Click"/>
+﻿<Window x:Name="windowMain" x:Class="SquadVoice.MainWindow"
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:local="clr-namespace:SquadVoice"
+		mc:Ignorable="d"
+		Title="SquadVoice" Height="500" Width="1000" Loaded="windowMain_Loaded" Closing="windowMain_Closing" MinWidth="1000" MinHeight="498" WindowStartupLocation="CenterScreen">
+	<Grid x:Name="mainGrid">
+        <TextBox x:Name="textBoxAllChat" HorizontalAlignment="Right" Margin="0,10,10,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="482" Height="361"/>
+        <TextBox x:Name="textBoxActiveField" HorizontalAlignment="Right" Margin="0,0,10,10" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Bottom" Width="482" Height="48"/>
         <Button x:Name="testButton1" Content="123123" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="372,426,0,0" Height="48" Width="78" Click="testButton1_Click"/>
+        <ListView x:Name="listViewChannels" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="361" Width="341" MouseLeftButtonUp="listViewChannels_MouseLeftButtonUp">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn/>
+                </GridView>
+            </ListView.View>
+        </ListView>
 
     </Grid>
 </Window>
