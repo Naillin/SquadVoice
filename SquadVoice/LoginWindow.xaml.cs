@@ -133,5 +133,83 @@ namespace SquadVoice
 				Thread.Sleep(100);
 			}
 		}
+
+		private void windowLogin_MouseDown(object sender, MouseButtonEventArgs e)
+		{
+			if (string.IsNullOrEmpty(textBoxLogin.Text))
+			{
+				textBoxLogin.Foreground = new SolidColorBrush(Colors.Silver);
+				textBoxLogin.Text = "Login";
+			}
+			if (string.IsNullOrEmpty(textBoxPassword.Text))
+			{
+				TogglePasswordVisibility(sender, e);
+				textBoxPassword.Foreground = new SolidColorBrush(Colors.DarkSlateGray);
+				textBoxPassword.Text = "Password";
+			}
+			//buttonLogin.Select();
+		}
+
+		private void textBoxLogin_MouseEnter(object sender, MouseEventArgs e)
+		{
+			if (textBoxLogin.Text.Equals("Login"))
+			{
+				textBoxLogin.Text = "";
+				textBoxLogin.Foreground = new SolidColorBrush(Colors.Black);
+			}
+		}
+
+		private void textBoxLogin_MouseLeave(object sender, MouseEventArgs e)
+		{
+			if (string.IsNullOrEmpty(textBoxLogin.Text))
+			{
+				textBoxLogin.Foreground = new SolidColorBrush(Colors.DarkSlateGray);
+				textBoxLogin.Text = "Login";
+			}
+		}
+
+		private void textBoxPassword_MouseEnter(object sender, MouseEventArgs e)
+		{
+			if (textBoxPassword.Text.Equals("Password"))
+			{
+				TogglePasswordVisibility(sender, e);
+				textBoxPassword.Text = "";
+				textBoxPassword.Foreground = new SolidColorBrush(Colors.Black);
+			}
+		}
+
+		private void textBoxPassword_MouseLeave(object sender, MouseEventArgs e)
+		{
+			if (string.IsNullOrEmpty(textBoxPassword.Text))
+			{
+				TogglePasswordVisibility(sender, e);
+				textBoxPassword.Foreground = new SolidColorBrush(Colors.DarkSlateGray);
+				textBoxPassword.Text = "Password";
+			}
+		}
+
+		private bool isPasswordHidden = true;  // Флаг для скрытого текста
+		private void TogglePasswordVisibility(object sender, RoutedEventArgs e)
+		{
+			if (isPasswordHidden)
+			{
+				textBoxPassword.Text = new string('•', textBoxPassword.Text.Length); // Скрыть символы
+				isPasswordHidden = false;
+			}
+			else
+			{
+				textBoxPassword.Text = originalText; // Показать текст
+				isPasswordHidden = true;
+			}
+		}
+
+		private string originalText = string.Empty;
+		private void textBoxPassword_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			if (isPasswordHidden)
+			{
+				originalText = textBoxPassword.Text;
+			}
+		}
 	}
 }

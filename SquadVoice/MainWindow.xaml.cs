@@ -16,6 +16,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Xml.Serialization;
 
 namespace SquadVoice
 {
@@ -43,25 +44,35 @@ namespace SquadVoice
 			videoClient = new NetworkTools().TryConnection(LoginWindow.SERVER_IP, LoginWindow.PORT_VIDEO); Thread.Sleep(100);
 			deskClient = new NetworkTools().TryConnection(LoginWindow.SERVER_IP, LoginWindow.PORT_DESK); Thread.Sleep(100);
 
-			FillListView(new NetworkTools(techClient).TakeBytes().GetString());
+			FillListView(ref listViewChannels, new NetworkTools(techClient).TakeBytes().GetString());
+
+			// Инициализация нового CancellationTokenSource
+			cancellationTokenSource = new CancellationTokenSource();
 		}
 
 		//Close
 		private void windowMain_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			//new NetworkTools().TryDisconnect(techClient);
-			StopAll();
+			try
+			{
+				//new NetworkTools().TryDisconnect(techClient);
+			}
+			catch { }
+			finally
+			{
+				StopAll();
+			}
 		}
 
-		private void FillListView(string channelsString)
+		private void FillListView(ref ListView listView, string strings)
 		{
 			// Разделение строки на массив имен каналов
-			string[] stringsNames = channelsString.Split(';');
+			string[] stringsNames = strings.Split(';');
 
 			foreach (string s in stringsNames)
 			{
 				// Добавление элементов в ListView
-				listViewChannels.Items.Add(s);
+				listView.Items.Add(s);
 			}
 		}
 
@@ -72,9 +83,6 @@ namespace SquadVoice
 		{
 			// Отменяем предыдущие операции, если они еще выполняются
 			cancellationTokenSource?.Cancel();
-
-			// Инициализация нового CancellationTokenSource
-			cancellationTokenSource = new CancellationTokenSource();
 			CancellationToken token = cancellationTokenSource.Token;
 
 			// Отправка данных
@@ -86,6 +94,9 @@ namespace SquadVoice
 			waveOut = new WaveOutEvent();
 			waveOut.Init(waveProvider);
 			waveOut.Play();
+
+			// Кто в канале
+			Task.Run(() => ConnectedClients(token), token);
 
 			// Запускаем поток для получения аудио
 			Task.Run(async () => await ReceiveAudioAsync(token), token);
@@ -100,8 +111,33 @@ namespace SquadVoice
 		//сообщение
 		private void testButton1_Click(object sender, RoutedEventArgs e)
 		{
-			NetworkTools networkTools = new NetworkTools(chatClient);
-			networkTools.SendString(textBoxActiveField.Text); //нельзя отправть пустое сообщение!
+			//получить ник в поле и передавать сюда для вывода сообщений
+			textBoxAllChat.Text = textBoxActiveField.Text + Environment.NewLine;
+
+			string message = textBoxActiveField.Text;
+			if (!string.IsNullOrEmpty(message))
+			{
+				new NetworkTools(chatClient).SendString(textBoxActiveField.Text);
+			}
+		}
+
+		private void buttonMicro_Click(object sender, RoutedEventArgs e)
+		{
+			ToggleMicrophone();
+		}
+
+		private void ConnectedClients(CancellationToken token) //не работает тварь
+		{
+			while (!token.IsCancellationRequested)
+			{
+				listViewClients.Items.Clear();
+				string connectedClients = new NetworkTools(techClient).TakeBytes().GetString();
+				listViewClients.Dispatcher.Invoke(() =>
+				{
+					FillListView(ref listViewClients, connectedClients);
+				});
+				Thread.Sleep(2000);
+			}
 		}
 
 		private WaveInEvent waveIn; // Для захвата аудио
@@ -224,8 +260,8 @@ namespace SquadVoice
 		{
 			waveIn?.StopRecording();
 			waveIn?.Dispose();
-			waveOut.Stop();
-			waveOut.Dispose();
+			waveOut?.Stop();
+			waveOut?.Dispose();
 
 			//// Уничтожаем сетевые потоки
 			//techClient?.GetStream()?.Close();
@@ -252,7 +288,7 @@ namespace SquadVoice
 		public void StopAll()
 		{
 			StopTasks();
-			StopNet();
+			//StopNet();
 
 			Application.Current.Shutdown();
 		}
@@ -269,7 +305,7 @@ namespace SquadVoice
 					string message = networkTools.GetString();
 					textBoxAllChat.Dispatcher.Invoke(() =>
 					{
-						textBoxAllChat.Text += " " + message;
+						textBoxAllChat.Text = textBoxAllChat.Text + message + Environment.NewLine;
 					});
 				}
 			}

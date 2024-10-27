@@ -6,17 +6,31 @@
 		xmlns:local="clr-namespace:SquadVoice"
 		mc:Ignorable="d"
 		Title="SquadVoice" Height="500" Width="1000" Loaded="windowMain_Loaded" Closing="windowMain_Closing" MinWidth="1000" MinHeight="498" WindowStartupLocation="CenterScreen">
-	<Grid x:Name="mainGrid">
-        <TextBox x:Name="textBoxAllChat" HorizontalAlignment="Right" Margin="0,10,10,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="482" Height="361"/>
-        <TextBox x:Name="textBoxActiveField" HorizontalAlignment="Right" Margin="0,0,10,10" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Bottom" Width="482" Height="48"/>
+    <Window.Background>
+        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+            <GradientStop Color="Black"/>
+            <GradientStop Color="#FF610000" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Background>
+    <Grid x:Name="mainGrid">
+        <TextBox x:Name="textBoxAllChat" HorizontalAlignment="Right" Margin="0,10,10,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="482" Height="361" IsReadOnly="True"/>
+        <TextBox x:Name="textBoxActiveField" HorizontalAlignment="Right" Margin="0,0,10,10" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="482" Height="48"/>
         <Button x:Name="testButton1" Content="123123" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="372,426,0,0" Height="48" Width="78" Click="testButton1_Click"/>
-        <ListView x:Name="listViewChannels" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="361" Width="341" MouseLeftButtonUp="listViewChannels_MouseLeftButtonUp">
+        <ListView x:Name="listViewChannels" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="361" Width="138" MouseLeftButtonUp="listViewChannels_MouseLeftButtonUp">
             <ListView.View>
                 <GridView>
                     <GridViewColumn/>
                 </GridView>
             </ListView.View>
         </ListView>
+        <ListView x:Name="listViewClients" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="153,10,709,0" VerticalAlignment="Top" Height="361">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button x:Name="buttonMicro" Content="Micro" HorizontalAlignment="Left" Margin="10,376,0,0" VerticalAlignment="Top" Height="24" Width="138" Click="buttonMicro_Click"/>
 
     </Grid>
 </Window>
