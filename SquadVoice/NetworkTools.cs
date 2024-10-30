@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace SquadVoice
 {
+
+	//////////////////////////////////////// СДЕЛАТЬ УНИЧТОЖЕНИЕ КЛИЕНТА НА TakeBytes ЕСЛИ ОН СОРВАЛ СОЕДИНЕНИЕ!!!!!!!!!!!!!
 	/// <summary>
 	/// Инструментарий для работы с TCP-соединениями.
 	/// </summary>
@@ -129,11 +131,10 @@ namespace SquadVoice
 		/// <summary>
 		/// Отправляет массив байтов в сетевой поток.
 		/// </summary>
-		/// <param name="data">Байты.</param>
-		public void SendByte(byte data)
+		/// <param name="data">Массив байтов.</param>
+		public void SendByte(byte[] data)
 		{
-			byte[] responseData = new byte[] { data };
-			_stream.Write(responseData, 0, responseData.Length);
+			_stream.Write(data, 0, data.Length);
 		}
 
 		/// <summary>
@@ -150,10 +151,9 @@ namespace SquadVoice
 		/// Асинхронно отправляет массив байтов в сетевой поток.
 		/// </summary>
 		/// <param name="data">Байты.</param>
-		public async Task SendByteAsync(byte data)
+		public async Task SendByteAsync(byte[] data)
 		{
-			byte[] responseData = new byte[] { data };
-			await _stream.WriteAsync(responseData, 0, responseData.Length);
+			await _stream.WriteAsync(data, 0, data.Length);
 		}
 
 		/// <summary>
@@ -244,7 +244,7 @@ namespace SquadVoice
 		/// <returns>Адрес клиента экземпляра класса, в противном случае адрес указанного клиента.</returns>
 		public IPAddress GetIP(TcpClient client = null)
 		{
-			if (client.Equals(null)) { return ((IPEndPoint)_client.Client.RemoteEndPoint).Address; }
+			if (client == null) { return ((IPEndPoint)_client.Client.RemoteEndPoint).Address; }
 			else { return ((IPEndPoint)client.Client.RemoteEndPoint).Address; }
 		}
 
@@ -270,6 +270,25 @@ namespace SquadVoice
 
 			if (apply) ApplyClient(result);
 			return result;
+		}
+
+		/// <summary>
+		/// Выполняет переданную операцию при получении указанного кода от источника.
+		/// </summary>
+		/// <param name="code">Код операции.</param>
+		/// <param name="operation">Передаваемая операция.</param>
+		/// <param name="cancellationToken">Токен завершающий операцию если активирован флаг цикличного выполнения.</param>
+		/// <param name="cycle">Флаг активирующий цикличное выполнение операции.</param>
+		public void OperationByCode(string code, Action operation, CancellationToken cancellationToken, bool cycle = false)
+		{
+			while (cycle && !cancellationToken.IsCancellationRequested)
+			{
+				string data = this.TakeBytes().GetString();
+				if (data.Equals(code))
+				{
+					operation();
+				}
+			}
 		}
 
 		///////////////////////////////////////////////////////////////////////////////

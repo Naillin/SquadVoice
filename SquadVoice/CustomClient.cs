@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SquadVoice
 {
-	public struct CustomClient
+	public class CustomClient
 	{
 		public int ID;
 		public IPAddress IP;
@@ -18,7 +18,7 @@ namespace SquadVoice
 		public TcpClient videoClient;
 		public TcpClient deskClient;
 
-		CustomClient(int ID, IPAddress IP, TcpClient techClient, TcpClient chatClient, TcpClient voiceClient, TcpClient videoClient, TcpClient deskClient)
+		public CustomClient(int ID, IPAddress IP, TcpClient techClient, TcpClient chatClient, TcpClient voiceClient, TcpClient videoClient, TcpClient deskClient)
 		{
 			this.ID = ID;
 			this.IP = IP;
@@ -27,6 +27,23 @@ namespace SquadVoice
 			this.voiceClient = voiceClient;
 			this.videoClient = videoClient;
 			this.deskClient = deskClient;
+		}
+
+		public void Close()
+		{
+			//Освобождаем ресрурсы соединения с клиентом
+			this.techClient?.Dispose();
+			this.chatClient?.Dispose();
+			this.voiceClient?.Dispose();
+			this.videoClient?.Dispose();
+			this.deskClient?.Dispose();
+
+			//Закрываем соединение с клиентом
+			this.techClient?.Close();
+			this.chatClient?.Close();
+			this.voiceClient?.Close();
+			this.videoClient?.Close();
+			this.deskClient?.Close();
 		}
 	}
 }

@@ -4,19 +4,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Xml.Serialization;
+
 
 namespace SquadVoice
 {
@@ -48,6 +41,8 @@ namespace SquadVoice
 
 			// Инициализация нового CancellationTokenSource
 			cancellationTokenSource = new CancellationTokenSource();
+
+			Task.Run(() => Animation()); // Перезапуск задач
 		}
 
 		//Close
@@ -64,60 +59,45 @@ namespace SquadVoice
 			}
 		}
 
-		private void FillListView(ref ListView listView, string strings)
-		{
-			// Разделение строки на массив имен каналов
-			string[] stringsNames = strings.Split(';');
-
-			foreach (string s in stringsNames)
-			{
-				// Добавление элементов в ListView
-				listView.Items.Add(s);
-			}
-		}
-
 		private BufferedWaveProvider waveProvider; // Буфер для воспроизведения
 		private WaveOutEvent waveOut; // Для воспроизведения аудио
 		CancellationTokenSource cancellationTokenSource;
-		private void listViewChannels_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+		bool firstFlag = true;
+		private void listViewChannels_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			// Отменяем предыдущие операции, если они еще выполняются
-			cancellationTokenSource?.Cancel();
-			CancellationToken token = cancellationTokenSource.Token;
+			if (firstFlag)
+			{
+				NetworkTools networkTools = new NetworkTools(techClient);
+				networkTools.SendString(listViewChannels.SelectedItem.ToString());
+				Thread.Sleep(100); // Небольшая задержка для отправки данных
 
-			// Отправка данных
-			new NetworkTools(techClient).SendString(listViewChannels.SelectedItem.ToString());
-			Thread.Sleep(100); // Небольшая задержка, чтобы данные точно дошли
+				StartTasks();
 
-			// Инициализация воспроизведения
-			waveProvider = new BufferedWaveProvider(new WaveFormat(44100, 1)); // 44.1kHz, моно
-			waveOut = new WaveOutEvent();
-			waveOut.Init(waveProvider);
-			waveOut.Play();
+				// Инициализация воспроизведения
+				waveProvider = new BufferedWaveProvider(new WaveFormat(44100, 1)); // 44.1kHz, моно
+				waveOut = new WaveOutEvent();
+				waveOut.Init(waveProvider);
+				waveOut.Play();
 
-			// Кто в канале
-			Task.Run(() => ConnectedClients(token), token);
-
-			// Запускаем поток для получения аудио
-			Task.Run(async () => await ReceiveAudioAsync(token), token);
-
-			// Запускаем захват и отправку аудио
-			Task.Run(() => StartAudioCapture(token), token);
-
-			// Получение сообщений
-			Task.Run(async () => await ReceiveMessageAsync(token), token);
+				firstFlag = false;
+			}
+			else
+			{
+				RestartPlayback();
+				ChangeChannel();
+			}
 		}
 
 		//сообщение
-		private void testButton1_Click(object sender, RoutedEventArgs e)
+		private void buttonSendMessage_Click(object sender, RoutedEventArgs e)
 		{
-			//получить ник в поле и передавать сюда для вывода сообщений
-			textBoxAllChat.Text = textBoxActiveField.Text + Environment.NewLine;
+			string message = LoginWindow.login + ": " + textBoxActiveField.Text;
+			textBoxActiveField.Text = string.Empty;
+			textBoxAllChat.Text = message + Environment.NewLine;
 
-			string message = textBoxActiveField.Text;
 			if (!string.IsNullOrEmpty(message))
 			{
-				new NetworkTools(chatClient).SendString(textBoxActiveField.Text);
+				new NetworkTools(chatClient).SendString(message);
 			}
 		}
 
@@ -130,7 +110,6 @@ namespace SquadVoice
 		{
 			while (!token.IsCancellationRequested)
 			{
-				listViewClients.Items.Clear();
 				string connectedClients = new NetworkTools(techClient).TakeBytes().GetString();
 				listViewClients.Dispatcher.Invoke(() =>
 				{
@@ -168,12 +147,12 @@ namespace SquadVoice
 			catch (ObjectDisposedException)
 			{
 				// Обработка ситуации, когда поток закрыт
-				MessageBox.Show("NetworkStream is closed. Cannot send audio data.", "айя!");
+				//MessageBox.Show("NetworkStream is closed. Cannot send audio data.", "айя!");
 			}
 			catch (Exception ex)
 			{
 				// Обработка других ошибок
-				MessageBox.Show("Error receiving audio11: " + ex.Message, "айя!");
+				//MessageBox.Show("Error receiving audio11: " + ex.Message, "айя!");
 			}
 		}
 
@@ -201,96 +180,12 @@ namespace SquadVoice
 			catch (Exception ex)
 			{
 				// Логирование ошибки или обработка
-				MessageBox.Show("Error receiving audio22: " + ex.Message, "айя!");
+				//MessageBox.Show("Error receiving audio22: " + ex.Message, "айя!");
 			}
 			finally
 			{
 				StopAudioPlayback();
 			}
-		}
-
-		private bool isMicrophoneEnabled = true;
-		public void ToggleMicrophone()
-		{
-			if (isMicrophoneEnabled)
-			{
-				// Остановить захват аудио
-				waveIn?.StopRecording();
-				isMicrophoneEnabled = false;
-			}
-			else
-			{
-				// Включить захват аудио
-				waveIn?.StartRecording();
-				isMicrophoneEnabled = true;
-			}
-		}
-
-		private void StopAudioCapture()
-		{
-			if (waveIn != null)
-			{
-				waveIn?.StopRecording(); // Остановить захват аудио
-				waveIn?.Dispose(); // Освободить ресурсы
-				waveIn = null;
-			}
-
-			if (voiceClient != null && voiceClient.Connected)
-			{
-				voiceClient.GetStream().Close(); // Закрыть сетевой поток
-				voiceClient.Close(); // Закрыть соединение
-			}
-		}
-
-		// Инициализация остановки воспроизведения
-		private void StopAudioPlayback()
-		{
-			waveOut?.Stop();
-			waveOut?.Dispose();
-			waveOut = null;
-		}
-
-		// Метод для остановки задач
-		public void StopTasks()
-		{
-			cancellationTokenSource.Cancel();
-		}
-
-		private void StopNet()
-		{
-			waveIn?.StopRecording();
-			waveIn?.Dispose();
-			waveOut?.Stop();
-			waveOut?.Dispose();
-
-			//// Уничтожаем сетевые потоки
-			//techClient?.GetStream()?.Close();
-			//chatClient?.GetStream()?.Close();
-			//voiceClient?.GetStream()?.Close();
-			//videoClient?.GetStream()?.Close();
-			//deskClient?.GetStream()?.Close();
-
-			//// Освобождаем ресрурсы соединения с клиентом
-			//techClient?.Dispose();
-			//chatClient?.Dispose();
-			//voiceClient?.Dispose();
-			//videoClient?.Dispose();
-			//deskClient?.Dispose();
-
-			//// Закрываем соединение с клиентом
-			//techClient?.Close();
-			//chatClient?.Close();
-			//voiceClient?.Close();
-			//videoClient?.Close();
-			//deskClient?.Close();
-		}
-
-		public void StopAll()
-		{
-			StopTasks();
-			//StopNet();
-
-			Application.Current.Shutdown();
 		}
 
 		private async Task ReceiveMessageAsync(CancellationToken token)
@@ -320,6 +215,172 @@ namespace SquadVoice
 			finally
 			{
 				StopNet();
+			}
+		}
+
+		private bool isMicrophoneEnabled = true;
+		public void ToggleMicrophone()
+		{
+			if (isMicrophoneEnabled)
+			{
+				// Остановить захват аудио
+				waveIn?.StopRecording();
+				buttonMicro.Content = "Micro OFF";
+				gradientStopMicroButton.Color = Colors.Red;
+				isMicrophoneEnabled = false;
+			}
+			else
+			{
+				// Включить захват аудио
+				waveIn?.StartRecording();
+				buttonMicro.Content = "Micro ON";
+				gradientStopMicroButton.Color = Colors.Lime;
+				isMicrophoneEnabled = true;
+			}
+		}
+
+		private void StopAudioCapture()
+		{
+			if (waveIn != null)
+			{
+				waveIn?.StopRecording(); // Остановить захват аудио
+				waveIn?.Dispose(); // Освободить ресурсы
+				waveIn = null;
+			}
+
+			if (voiceClient != null && voiceClient.Connected)
+			{
+				voiceClient.GetStream().Close(); // Закрыть сетевой поток
+				voiceClient.Close(); // Закрыть соединение
+			}
+		}
+
+		// Инициализация остановки воспроизведения
+		private void StopAudioPlayback()
+		{
+			waveOut?.Stop();
+			waveOut?.Dispose();
+			waveOut = null;
+		}
+
+		private void StartTasks()
+		{
+			CancellationToken token = cancellationTokenSource.Token;
+
+			Task.Run(() => ConnectedClients(token), token);
+			Task.Run(async () => await ReceiveAudioAsync(token), token);
+			Task.Run(() => StartAudioCapture(token), token);
+			Task.Run(async () => await ReceiveMessageAsync(token), token);
+		}
+
+		private string channelChangeCode = "ChannelChange";
+		public void ChangeChannel() //нихуя не работает
+		{
+			StopTasks(); // Отменяем все задачи без закрытия соединений
+						 // Прерываем задачи, но оставляем соединения
+			NetworkTools networkTools = new NetworkTools(techClient);
+			networkTools.SendString(channelChangeCode);
+			Thread.Sleep(3000); // Небольшая задержка для отправки данных
+			networkTools.SendString(listViewChannels.SelectedItem.ToString());
+			Thread.Sleep(100); // Небольшая задержка для отправки данных
+
+			// Запускаем новые задачи после смены канала
+			StartTasks();
+		}
+
+		// Метод для остановки задач
+		private void StopTasks()
+		{
+			cancellationTokenSource.Cancel(); // Завершаем задачи через токен отмены
+			cancellationTokenSource.Dispose(); // Очищаем токен для последующих операций
+			cancellationTokenSource = new CancellationTokenSource(); // Инициализируем новый токен для следующих задач
+		}
+
+		private void RestartPlayback()
+		{
+			// Остановить текущее воспроизведение, если оно уже запущено
+			if (waveOut != null)
+			{
+				waveOut.Stop();
+				waveOut.Dispose();
+				waveOut = null;
+			}
+
+			// Освободить предыдущий waveProvider
+			waveProvider = null;
+
+			// Небольшая задержка перед переинициализацией, чтобы освободить ресурсы
+			Thread.Sleep(200);
+
+			// Переинициализация воспроизведения
+			waveProvider = new BufferedWaveProvider(new WaveFormat(44100, 1)); // 44.1kHz, моно
+			waveOut = new WaveOutEvent();
+			waveOut.Init(waveProvider);
+			waveOut.Play();
+		}
+
+
+
+		private void StopNet()
+		{
+			//waveIn?.StopRecording();
+			//waveIn?.Dispose();
+			//waveOut?.Stop();
+			//waveOut?.Dispose();
+
+			// Уничтожаем сетевые потоки
+			//techClient?.GetStream()?.Close();
+			chatClient?.GetStream()?.Close();
+			voiceClient?.GetStream()?.Close();
+			videoClient?.GetStream()?.Close();
+			deskClient?.GetStream()?.Close();
+
+			// Освобождаем ресрурсы соединения с клиентом
+			//techClient?.Dispose();
+			//chatClient?.Dispose();
+			//voiceClient?.Dispose();
+			//videoClient?.Dispose();
+			//deskClient?.Dispose();
+
+			// Закрываем соединение с клиентом
+			//techClient?.Close();
+			//chatClient?.Close();
+			//voiceClient?.Close();
+			//videoClient?.Close();
+			//deskClient?.Close();
+		}
+
+		public void StopAll()
+		{
+			StopTasks();
+			StopNet();
+
+			Application.Current.Shutdown();
+		}
+
+		private void FillListView(ref ListView listView, string strings)
+		{
+			listView.Items.Clear();
+
+			// Разделение строки на массив имен каналов
+			string[] stringsNames = strings.Split(';');
+
+			foreach (string s in stringsNames)
+			{
+				// Добавление элементов в ListView
+				listView.Items.Add(s);
+			}
+		}
+
+		private void Animation()
+		{
+			while (true)
+			{
+				rotateTransformMicroButton.Dispatcher.Invoke(() =>
+				{
+					rotateTransformMicroButton.Angle = rotateTransformMicroButton.Angle + 10;
+				});
+				Thread.Sleep(100);
 			}
 		}
 	}
