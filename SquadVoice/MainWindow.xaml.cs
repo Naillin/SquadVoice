@@ -89,11 +89,13 @@ namespace SquadVoice
 		}
 
 		//сообщение
+		string messagesBuffer = string.Empty;
 		private void buttonSendMessage_Click(object sender, RoutedEventArgs e)
 		{
 			string message = LoginWindow.login + ": " + textBoxActiveField.Text;
 			textBoxActiveField.Text = string.Empty;
-			textBoxAllChat.Text = message + Environment.NewLine;
+			messagesBuffer = messagesBuffer + message + Environment.NewLine;
+			textBoxAllChat.Text = messagesBuffer;
 
 			if (!string.IsNullOrEmpty(message))
 			{
@@ -198,9 +200,10 @@ namespace SquadVoice
 					// Используем асинхронное чтение с токеном отмены
 					await networkTools.TakeBytesAsync();
 					string message = networkTools.GetString();
+					messagesBuffer = messagesBuffer + message;
 					textBoxAllChat.Dispatcher.Invoke(() =>
 					{
-						textBoxAllChat.Text = textBoxAllChat.Text + message + Environment.NewLine;
+						textBoxAllChat.Text = messagesBuffer + Environment.NewLine;
 					});
 				}
 			}
