@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 
@@ -67,9 +68,10 @@ namespace SquadVoice
 		{
 			if (firstFlag)
 			{
-				NetworkTools networkTools = new NetworkTools(techClient);
-				networkTools.SendString(listViewChannels.SelectedItem.ToString());
+				new NetworkTools(techClient).SendString(listViewChannels.SelectedItem.ToString());
 				Thread.Sleep(100); // Небольшая задержка для отправки данных
+				messagesBuffer = new NetworkTools(chatClient).TakeBytes().GetString();
+				textBoxAllChat.Text = messagesBuffer + Environment.NewLine;
 
 				StartTasks();
 
@@ -92,14 +94,24 @@ namespace SquadVoice
 		string messagesBuffer = string.Empty;
 		private void buttonSendMessage_Click(object sender, RoutedEventArgs e)
 		{
-			string message = LoginWindow.login + ": " + textBoxActiveField.Text;
-			textBoxActiveField.Text = string.Empty;
-			messagesBuffer = messagesBuffer + message + Environment.NewLine;
-			textBoxAllChat.Text = messagesBuffer;
-
-			if (!string.IsNullOrEmpty(message))
+			if(!string.IsNullOrEmpty(textBoxActiveField.Text))
 			{
+				string message = textBoxActiveField.Text;
+				textBoxActiveField.Text = string.Empty;
+				messagesBuffer = messagesBuffer + LoginWindow.login + message + Environment.NewLine;
+				textBoxAllChat.Text = messagesBuffer;
+
 				new NetworkTools(chatClient).SendString(message);
+			}
+		}
+
+		//Отправка сообщения на enter
+		private void textBoxActiveField_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter)
+			{
+				e.Handled = true;
+				buttonSendMessage_Click(sender, e);
 			}
 		}
 
@@ -200,10 +212,10 @@ namespace SquadVoice
 					// Используем асинхронное чтение с токеном отмены
 					await networkTools.TakeBytesAsync();
 					string message = networkTools.GetString();
-					messagesBuffer = messagesBuffer + message;
+					messagesBuffer = messagesBuffer + message + Environment.NewLine;
 					textBoxAllChat.Dispatcher.Invoke(() =>
 					{
-						textBoxAllChat.Text = messagesBuffer + Environment.NewLine;
+						textBoxAllChat.Text = messagesBuffer;
 					});
 				}
 			}

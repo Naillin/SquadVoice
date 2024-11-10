@@ -205,5 +205,23 @@ namespace SquadVoice
 				originalText = textBoxPassword.Text;
 			}
 		}
+
+		private void textBoxLogin_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter)
+			{
+				e.Handled = true;
+				textBoxPassword.Focus();
+			}
+		}
+
+		private void textBoxPassword_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter)
+			{
+				e.Handled = true;
+				buttonLogin_Click(sender, e);
+			}
+		}
 	}
 }

@@ -5,7 +5,7 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:SquadVoice"
 		mc:Ignorable="d"
-		Title="SquadVoice" Height="500" Width="1000" Loaded="windowMain_Loaded" Closing="windowMain_Closing" MinWidth="1000" MinHeight="498" WindowStartupLocation="CenterScreen">
+		Title="SquadVoice" Width="1000" Height="500"  Loaded="windowMain_Loaded" Closing="windowMain_Closing" MinWidth="1000" MinHeight="500" WindowStartupLocation="CenterScreen">
     <Window.Background>
         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
             <GradientStop Color="Black"/>
@@ -13,8 +13,8 @@
         </LinearGradientBrush>
     </Window.Background>
     <Grid x:Name="mainGrid">
-        <TextBox x:Name="textBoxAllChat" HorizontalAlignment="Right" Margin="0,35,10,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="694" Height="384" IsReadOnly="True" FontFamily="Bahnschrift Light Condensed" FontSize="20" Background="#7FFFFFFF"/>
-        <TextBox x:Name="textBoxActiveField" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="639" Height="48" FontFamily="Bahnschrift Light Condensed" FontSize="20" MaxLength="300" MaxLines="1" TextWrapping="Wrap" VerticalContentAlignment="Center" Background="#88FFFFFF"/>
+        <TextBox x:Name="textBoxAllChat" Margin="296,35,10,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="384" IsReadOnly="True" FontFamily="Bahnschrift Light Condensed" FontSize="20" Background="#7FFFFFFF"/>
+        <TextBox x:Name="textBoxActiveField" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="639" Height="48" FontFamily="Bahnschrift Light Condensed" FontSize="20" MaxLength="300" MaxLines="1" TextWrapping="Wrap" VerticalContentAlignment="Center" Background="#88FFFFFF" KeyDown="textBoxActiveField_KeyDown"/>
         <Button x:Name="buttonSendMessage" HorizontalAlignment="Left" Margin="296,424,0,10" Width="50" Click="buttonSendMessage_Click" BorderBrush="{x:Null}" FontFamily="Bahnschrift Light Condensed" FontSize="36" Height="50" VerticalAlignment="Bottom">
             <Button.Background>
                 <ImageBrush ImageSource="Res/send.png"/>
