@@ -10,7 +10,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-
+//Media
+using System.Media;
 
 namespace SquadVoice
 {
@@ -33,6 +34,9 @@ namespace SquadVoice
 		TcpClient deskClient;
 		private void windowMain_Loaded(object sender, RoutedEventArgs e)
 		{
+			SoundPlayer sndVoscl = new SoundPlayer(Properties.Resources.Voscl);
+			sndVoscl.Play();
+
 			chatClient = new NetworkTools().TryConnection(LoginWindow.SERVER_IP, LoginWindow.PORT_CHAT); Thread.Sleep(100);
 			voiceClient = new NetworkTools().TryConnection(LoginWindow.SERVER_IP, LoginWindow.PORT_VOICE); Thread.Sleep(100);
 			videoClient = new NetworkTools().TryConnection(LoginWindow.SERVER_IP, LoginWindow.PORT_VIDEO); Thread.Sleep(100);
@@ -51,7 +55,7 @@ namespace SquadVoice
 		{
 			try
 			{
-				//new NetworkTools().TryDisconnect(techClient);
+				new NetworkTools().TryDisconnect(techClient);
 			}
 			catch { }
 			finally
@@ -66,12 +70,15 @@ namespace SquadVoice
 		bool firstFlag = true;
 		private void listViewChannels_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			SoundPlayer sndTic = new SoundPlayer(Properties.Resources.Tic);
+			sndTic.Play();
+
 			if (firstFlag)
 			{
 				new NetworkTools(techClient).SendString(listViewChannels.SelectedItem.ToString());
 				Thread.Sleep(100); // Небольшая задержка для отправки данных
-				messagesBuffer = new NetworkTools(chatClient).TakeBytes().GetString();
-				textBoxAllChat.Text = messagesBuffer + Environment.NewLine;
+				messagesBuffer = new NetworkTools(chatClient).TakeBytes().GetString() + Environment.NewLine;
+				textBoxAllChat.Text = messagesBuffer;
 
 				StartTasks();
 
@@ -88,6 +95,8 @@ namespace SquadVoice
 				RestartPlayback();
 				ChangeChannel();
 			}
+
+			//sndTic.Stop();
 		}
 
 		//сообщение
@@ -98,7 +107,7 @@ namespace SquadVoice
 			{
 				string message = textBoxActiveField.Text;
 				textBoxActiveField.Text = string.Empty;
-				messagesBuffer = messagesBuffer + LoginWindow.login + message + Environment.NewLine;
+				messagesBuffer = messagesBuffer + LoginWindow.login + ": " + message + Environment.NewLine;
 				textBoxAllChat.Text = messagesBuffer;
 
 				new NetworkTools(chatClient).SendString(message);
@@ -112,6 +121,7 @@ namespace SquadVoice
 			{
 				e.Handled = true;
 				buttonSendMessage_Click(sender, e);
+				textBoxActiveField.Focus();
 			}
 		}
 
@@ -204,6 +214,7 @@ namespace SquadVoice
 
 		private async Task ReceiveMessageAsync(CancellationToken token)
 		{
+			SoundPlayer sndWhu = new SoundPlayer(Properties.Resources.Whu);
 			try
 			{
 				NetworkTools networkTools = new NetworkTools(chatClient);
@@ -212,6 +223,9 @@ namespace SquadVoice
 					// Используем асинхронное чтение с токеном отмены
 					await networkTools.TakeBytesAsync();
 					string message = networkTools.GetString();
+
+					sndWhu.Play();
+
 					messagesBuffer = messagesBuffer + message + Environment.NewLine;
 					textBoxAllChat.Dispatcher.Invoke(() =>
 					{
@@ -225,7 +239,7 @@ namespace SquadVoice
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Error receiving message: " + ex.Message, "Error");
+				MessageBox.Show(Properties.Resources.errorReceivingMessageString + ex.Message, Properties.Resources.errorString);
 			}
 			finally
 			{
@@ -240,7 +254,7 @@ namespace SquadVoice
 			{
 				// Остановить захват аудио
 				waveIn?.StopRecording();
-				buttonMicro.Content = "Micro OFF";
+				buttonMicro.Content = Properties.Resources.microOffString;
 				gradientStopMicroButton.Color = Colors.Red;
 				isMicrophoneEnabled = false;
 			}
@@ -248,7 +262,7 @@ namespace SquadVoice
 			{
 				// Включить захват аудио
 				waveIn?.StartRecording();
-				buttonMicro.Content = "Micro ON";
+				buttonMicro.Content = Properties.Resources.microOnString;
 				gradientStopMicroButton.Color = Colors.Lime;
 				isMicrophoneEnabled = true;
 			}
@@ -368,7 +382,7 @@ namespace SquadVoice
 		public void StopAll()
 		{
 			StopTasks();
-			StopNet();
+			//StopNet();
 
 			Application.Current.Shutdown();
 		}
@@ -389,13 +403,20 @@ namespace SquadVoice
 
 		private void Animation()
 		{
-			while (true)
+			try
 			{
-				rotateTransformMicroButton.Dispatcher.Invoke(() =>
+				while (true)
 				{
-					rotateTransformMicroButton.Angle = rotateTransformMicroButton.Angle + 10;
-				});
-				Thread.Sleep(100);
+					rotateTransformMicroButton.Dispatcher.Invoke(() =>
+					{
+						rotateTransformMicroButton.Angle = rotateTransformMicroButton.Angle + 10;
+					});
+					Thread.Sleep(100);
+				}
+			}
+			catch
+			{
+
 			}
 		}
 	}

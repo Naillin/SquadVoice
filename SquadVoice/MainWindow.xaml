@@ -5,29 +5,29 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:SquadVoice"
 		mc:Ignorable="d"
-		Title="SquadVoice" Width="1000" Height="500"  Loaded="windowMain_Loaded" Closing="windowMain_Closing" MinWidth="1000" MinHeight="500" WindowStartupLocation="CenterScreen">
+		Title="SquadVoice" Width="1050" Height="550"  Loaded="windowMain_Loaded" Closing="windowMain_Closing" MinWidth="1000" MinHeight="500" WindowStartupLocation="CenterScreen" Icon="/iconSVgreen.png">
     <Window.Background>
         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
             <GradientStop Color="Black"/>
             <GradientStop Color="White" Offset="1"/>
         </LinearGradientBrush>
     </Window.Background>
-    <Grid x:Name="mainGrid">
-        <TextBox x:Name="textBoxAllChat" Margin="296,35,10,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="384" IsReadOnly="True" FontFamily="Bahnschrift Light Condensed" FontSize="20" Background="#7FFFFFFF"/>
-        <TextBox x:Name="textBoxActiveField" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="639" Height="48" FontFamily="Bahnschrift Light Condensed" FontSize="20" MaxLength="300" MaxLines="1" TextWrapping="Wrap" VerticalContentAlignment="Center" Background="#88FFFFFF" KeyDown="textBoxActiveField_KeyDown"/>
+    <Grid x:Name="mainGrid" Width="1000" Height="500" MinWidth="1000" MinHeight="500" Margin="0,-15,0,0">
+        <TextBox x:Name="textBoxAllChat" Margin="296,35,10,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="400" IsReadOnly="True" FontFamily="Bahnschrift Light Condensed" FontSize="20" Background="#7FFFFFFF"/>
+        <TextBox x:Name="textBoxActiveField" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="639" Height="50" FontFamily="Bahnschrift Light Condensed" FontSize="20" MaxLength="300" MaxLines="1" TextWrapping="Wrap" VerticalContentAlignment="Center" Background="#88FFFFFF" KeyDown="textBoxActiveField_KeyDown"/>
         <Button x:Name="buttonSendMessage" HorizontalAlignment="Left" Margin="296,424,0,10" Width="50" Click="buttonSendMessage_Click" BorderBrush="{x:Null}" FontFamily="Bahnschrift Light Condensed" FontSize="36" Height="50" VerticalAlignment="Bottom">
             <Button.Background>
-                <ImageBrush ImageSource="Res/send.png"/>
+                <ImageBrush ImageSource="/send.png"/>
             </Button.Background>
         </Button>
-        <ListView x:Name="listViewChannels" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,35,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="410" Width="138" SelectionChanged="listViewChannels_SelectionChanged" FontFamily="Bahnschrift Light Condensed" FontSize="18" Background="#7FFFFFFF">
+        <ListView x:Name="listViewChannels" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,35,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="426" Width="138" SelectionChanged="listViewChannels_SelectionChanged" FontFamily="Bahnschrift Light Condensed" FontSize="18" Background="#7FFFFFFF">
             <ListView.View>
                 <GridView>
                     <GridViewColumn/>
                 </GridView>
             </ListView.View>
         </ListView>
-        <ListView x:Name="listViewClients" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="153,35,709,0" VerticalAlignment="Top" Width="138" FontFamily="Bahnschrift Light Condensed" FontSize="18" Background="#7FFFFFFF" Height="410">
+        <ListView x:Name="listViewClients" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="153,35,709,0" VerticalAlignment="Top" Width="138" FontFamily="Bahnschrift Light Condensed" FontSize="18" Background="#7FFFFFFF" Height="426">
             <ListView.View>
                 <GridView>
                     <GridViewColumn/>

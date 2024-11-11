@@ -10,6 +10,8 @@ using System.Windows.Media;
 using System.IO;
 using System.Net;
 using System.Threading;
+//Media
+using System.Media;
 
 namespace SquadVoice
 {
@@ -33,6 +35,9 @@ namespace SquadVoice
 		private string filePathCredentials = "credentials.txt";
 		private void windowLogin_Loaded(object sender, RoutedEventArgs e)
 		{
+			SoundPlayer sndDadu = new SoundPlayer(Properties.Resources.Dadu);
+			sndDadu.Play();
+
 			if (File.Exists(filePathConfig))
 			{
 				string[] linesConfig = File.ReadAllLines(filePathConfig);
@@ -58,13 +63,15 @@ namespace SquadVoice
 			{
 				string[] linesCredentials = File.ReadAllLines(filePathCredentials);
 				textBoxLogin.Text = linesCredentials[0].Split('=')[1];  // Получаем значение логина
-				textBoxPassword.Text = linesCredentials[1].Split('=')[1];  // Получаем значение пароля
+				passwordBoxPassword.Password = linesCredentials[1].Split('=')[1];  // Получаем значение пароля
 			}
 			else
 			{
 				File.WriteAllText(filePathCredentials, $"Login={123}\nPassword={123}");
 			}
 
+
+			ButtonCheck();
 			// Анимация
 			Task.Run(() => Animation());
 		}
@@ -79,7 +86,7 @@ namespace SquadVoice
 		private void buttonLogin_Click(object sender, RoutedEventArgs e)
 		{
 			login = textBoxLogin.Text;
-			string password = textBoxPassword.Text;
+			string password = passwordBoxPassword.Password;
 
 			// Перезапись файла с новыми данными
 			File.WriteAllText(filePathCredentials, $"Login={login}\nPassword={password}");
@@ -112,7 +119,10 @@ namespace SquadVoice
 			}
 			else
 			{
-				MessageBox.Show("неправильный пароль братан!", "айя!");
+				SoundPlayer sndError = new SoundPlayer(Properties.Resources.Error);
+				sndError.Play();
+				MessageBox.Show(Properties.Resources.invalidLoginDataString, Properties.Resources.errorString);
+				sndError.Stop();
 			}
 		}
 
@@ -128,6 +138,18 @@ namespace SquadVoice
 			}
 		}
 
+		private void ButtonCheck()
+		{
+			if (!textBoxLogin.Text.Equals("Login"))
+			{
+				textBoxLogin.Foreground = new SolidColorBrush(Colors.Black);
+			}
+			if (!passwordBoxPassword.Password.Equals("Password"))
+			{
+				passwordBoxPassword.Foreground = new SolidColorBrush(Colors.Black);
+			}
+		}
+
 		private void windowLogin_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			if (string.IsNullOrEmpty(textBoxLogin.Text))
@@ -135,75 +157,57 @@ namespace SquadVoice
 				textBoxLogin.Foreground = new SolidColorBrush(Colors.Silver);
 				textBoxLogin.Text = "Login";
 			}
-			if (string.IsNullOrEmpty(textBoxPassword.Text))
+			if (string.IsNullOrEmpty(passwordBoxPassword.Password))
 			{
-				TogglePasswordVisibility(sender, e);
-				textBoxPassword.Foreground = new SolidColorBrush(Colors.DarkSlateGray);
-				textBoxPassword.Text = "Password";
+				passwordBoxPassword.Foreground = new SolidColorBrush(Colors.Silver);
+				passwordBoxPassword.Password = "Password";
 			}
-			//buttonLogin.Select();
 		}
 
-		private void textBoxLogin_MouseEnter(object sender, MouseEventArgs e)
+		private void textBoxLogin_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			if (textBoxLogin.Text.Equals("Login"))
 			{
 				textBoxLogin.Text = "";
 				textBoxLogin.Foreground = new SolidColorBrush(Colors.Black);
 			}
+			if (string.IsNullOrEmpty(passwordBoxPassword.Password))
+			{
+				passwordBoxPassword.Foreground = new SolidColorBrush(Colors.DarkSlateGray);
+				passwordBoxPassword.Password = "Password";
+			}
 		}
 
 		private void textBoxLogin_MouseLeave(object sender, MouseEventArgs e)
+		{
+			//if (string.IsNullOrEmpty(textBoxLogin.Text))
+			//{
+			//	textBoxLogin.Foreground = new SolidColorBrush(Colors.DarkSlateGray);
+			//	textBoxLogin.Text = "Login";
+			//}
+		}
+
+		private void passwordBoxPassword_MouseDown(object sender, MouseButtonEventArgs e)
 		{
 			if (string.IsNullOrEmpty(textBoxLogin.Text))
 			{
 				textBoxLogin.Foreground = new SolidColorBrush(Colors.DarkSlateGray);
 				textBoxLogin.Text = "Login";
 			}
-		}
-
-		private void textBoxPassword_MouseEnter(object sender, MouseEventArgs e)
-		{
-			if (textBoxPassword.Text.Equals("Password"))
+			if (passwordBoxPassword.Password.Equals("Password"))
 			{
-				TogglePasswordVisibility(sender, e);
-				textBoxPassword.Text = "";
-				textBoxPassword.Foreground = new SolidColorBrush(Colors.Black);
+				passwordBoxPassword.Password = "";
+				passwordBoxPassword.Foreground = new SolidColorBrush(Colors.Black);
 			}
 		}
 
-		private void textBoxPassword_MouseLeave(object sender, MouseEventArgs e)
+		private void passwordBoxPassword_MouseLeave(object sender, MouseEventArgs e)
 		{
-			if (string.IsNullOrEmpty(textBoxPassword.Text))
-			{
-				TogglePasswordVisibility(sender, e);
-				textBoxPassword.Foreground = new SolidColorBrush(Colors.DarkSlateGray);
-				textBoxPassword.Text = "Password";
-			}
-		}
-
-		private bool isPasswordHidden = true;  // Флаг для скрытого текста
-		private void TogglePasswordVisibility(object sender, RoutedEventArgs e)
-		{
-			if (isPasswordHidden)
-			{
-				textBoxPassword.Text = new string('•', textBoxPassword.Text.Length); // Скрыть символы
-				isPasswordHidden = false;
-			}
-			else
-			{
-				textBoxPassword.Text = originalText; // Показать текст
-				isPasswordHidden = true;
-			}
-		}
-
-		private string originalText = string.Empty;
-		private void textBoxPassword_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			if (isPasswordHidden)
-			{
-				originalText = textBoxPassword.Text;
-			}
+			//if (string.IsNullOrEmpty(passwordBoxPassword.Password))
+			//{
+			//	passwordBoxPassword.Foreground = new SolidColorBrush(Colors.DarkSlateGray);
+			//	passwordBoxPassword.Password = "Password";
+			//}
 		}
 
 		private void textBoxLogin_KeyDown(object sender, KeyEventArgs e)
@@ -211,11 +215,11 @@ namespace SquadVoice
 			if (e.Key == Key.Enter)
 			{
 				e.Handled = true;
-				textBoxPassword.Focus();
+				passwordBoxPassword.Focus();
 			}
 		}
 
-		private void textBoxPassword_KeyDown(object sender, KeyEventArgs e)
+		private void passwordBoxPassword_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.Key == Key.Enter)
 			{

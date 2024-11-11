@@ -61,6 +61,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Security.AccessControl, Version=6.0.0.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.AccessControl.6.0.1\lib\net461\System.Security.AccessControl.dll</HintPath>
     </Reference>
@@ -131,6 +132,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -142,10 +144,67 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Res\shesterOrange.png" />
+    <None Include="bin\Debug\Res\sound\Dadu.wav" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Res\send.png" />
+    <None Include="bin\Debug\Res\sound\Din.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\sound\Error.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\sound\Tic.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\sound\Voscl.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\sound\Whu.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\Parent4.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\person.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\send.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\shester.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\shesterOrange.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\tools.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\iconSV.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="shesterOrange.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="send.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="iconSV.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="tools.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="iconSVred.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="iconSVgreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\iconSVred.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\Res\iconSVgreen.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

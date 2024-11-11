@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,9 @@ namespace SquadVoice
 		private string filePathConfig = "configClient.txt";
 		private void windowOptions_Loaded(object sender, RoutedEventArgs e)
 		{
+			SoundPlayer sndTic = new SoundPlayer(Properties.Resources.Tic);
+			sndTic.Play();
+
 			textBoxIP.Text = LoginWindow.SERVER_IP.ToString();
 			textBoxPortTech.Text = LoginWindow.PORT_TECH.ToString();
 			textBoxPortChat.Text = LoginWindow.PORT_CHAT.ToString();
